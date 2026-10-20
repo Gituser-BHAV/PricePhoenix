@@ -1,0 +1,30 @@
+{
+  "settings": {
+    "currency": "INR",
+    "email_alerts": true,
+    "alert_on_target": true,
+    "alert_on_good_deal": true,
+    "good_deal_discount_percent": 15,
+    "minimum_history_points_for_trend": 5
+  },
+  "products": [
+    {
+      "id": "sample-headphones",
+      "name": "Sample Wireless Headphones",
+      "url": "https://www.amazon.in/dp/REPLACE_WITH_REAL_PRODUCT_ID",
+      "source": "mock",
+      "target_price": 2500,
+      "alert_threshold": 2700,
+      "enabled": true
+    },
+    {
+      "id": "sample-keyboard",
+      "name": "Sample Mechanical Keyboard",
+      "url": "https://www.flipkart.com/REPLACE_WITH_REAL_PRODUCT",
+      "source": "mock",
+      "target_price": 1800,
+      "alert_threshold": 2000,
+      "enabled": true
+    }
+  ]
+}
