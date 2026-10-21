@@ -2,7 +2,15 @@ import csv
 from datetime import datetime, timezone
 from pathlib import Path
 
-FIELDS = ["timestamp", "product_id", "marketplace", "price", "currency", "in_stock"]
+# File: src/price_history.py
+FIELDS = [
+    "timestamp",
+    "product_id",
+    "marketplace",
+    "price",
+    "currency",
+    "in_stock",
+]
 
 def read_history(path="data/price_history.csv"):
     file_path = Path(path)
