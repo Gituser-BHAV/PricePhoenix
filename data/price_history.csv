@@ -9,3 +9,5 @@ timestamp,product_id,marketplace,price,currency,in_stock
 2026-10-20T17:18:14+00:00,sample-keyboard,mock,1950.00,INR,true
 2026-10-20T21:42:46+00:00,sample-headphones,mock,2400.00,INR,true
 2026-10-20T21:42:46+00:00,sample-keyboard,mock,1950.00,INR,true
+2026-10-21T04:59:01+00:00,sample-headphones,mock,2400.00,INR,true
+2026-10-21T04:59:01+00:00,sample-keyboard,mock,1950.00,INR,true
