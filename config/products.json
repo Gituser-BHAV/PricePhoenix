@@ -9,21 +9,21 @@
   },
   "products": [
     {
-      "id": "sample-headphones",
-      "name": "Sample Wireless Headphones",
-      "url": "https://www.amazon.in/dp/REPLACE_WITH_REAL_PRODUCT_ID",
+      "id": "Amazon protonics cable",
+      "name": "Amazon protonics cable",
+      "url": "https://www.amazon.in/dp/B08CF3D7QR",
       "source": "mock",
-      "target_price": 2500,
-      "alert_threshold": 2700,
+      "target_price": 100,
+      "alert_threshold": 120,
       "enabled": true
     },
     {
-      "id": "sample-keyboard",
-      "name": "Sample Mechanical Keyboard",
-      "url": "https://www.flipkart.com/REPLACE_WITH_REAL_PRODUCT",
+      "id": "Flipkart protonics cable",
+      "name": "Flipkart protonics cable",
+      "url": "https://dl.flipkart.com/s/eflXe8NNNN",
       "source": "mock",
-      "target_price": 1800,
-      "alert_threshold": 2000,
+      "target_price": 100,
+      "alert_threshold": 120,
       "enabled": true
     }
   ]
