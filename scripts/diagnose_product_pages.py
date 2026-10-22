@@ -1,93 +1,90 @@
-
-# File: scripts/diagnose_product_pages.py
-"""Check whether GitHub Actions can open product pages and see price text."""
+# scripts/diagnose_product_pages.py — Inspect product-page price metadata
 
 import json
 import re
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-ROOT = Path(__file__).resolve().parent.parent
-CONFIG = ROOT / "config" / "products.json"
-
-PRICE_PATTERN = re.compile(
-    r"(?:₹|Rs\.?\s*)\s?[\d,]+(?:\.\d{1,2})?"
-)
-
-BLOCK_MARKERS = (
-    "captcha",
-    "robot check",
-    "access denied",
-    "unusual traffic",
-    "verify you are human",
-    "automated access",
-)
-
+ROOT = Path(__file__).resolve().parents[1]
+CONFIG_PATH = ROOT / "config" / "products.json"
 
 def main():
-    config = json.loads(CONFIG.read_text(encoding="utf-8"))
+    config = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
     products = [p for p in config["products"] if p.get("enabled", True)]
 
-    if not products:
-        print("No enabled products found in config/products.json")
-        return
-
-    failures = 0
-
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(headless=True)
         page = browser.new_page(
             locale="en-IN",
-            timezone_id="Asia/Kolkata",
+            viewport={"width": 1365, "height": 900},
         )
 
         for product in products:
-            name = product.get("name", product.get("id", "Unknown"))
-            url = product["url"]
+            print(f"\n--- {product['name']} ---")
 
-            print(f"\n--- {name} ---")
             try:
                 response = page.goto(
-                    url,
+                    product["url"],
                     wait_until="domcontentloaded",
                     timeout=45000,
                 )
-                page.wait_for_timeout(4000)
 
-                status = response.status if response else "no HTTP response"
-                title = page.title()
-                final_url = page.url
-                body = page.locator("body").inner_text(timeout=10000)
-                excerpt = " ".join(body.split())[:1200]
+                print("HTTP status:", response.status if response else "No response")
+                print("Page title:", page.title())
+                print("Final URL:", page.url)
 
-                print(f"HTTP status: {status}")
-                print(f"Page title: {title}")
-                print(f"Final URL: {final_url}")
+                # Inspect only metadata and product-specific price elements.
+                checks = {
+                    "OpenGraph price": (
+                        'meta[property="product:price:amount"]',
+                        "content",
+                    ),
+                    "Amazon price": (
+                        "#corePrice_feature_div .a-offscreen",
+                        None,
+                    ),
+                    "Amazon price block": (
+                        "#corePriceDisplay_desktop_feature_div .a-offscreen",
+                        None,
+                    ),
+                    "Generic product price": (
+                        '[itemprop="price"]',
+                        "content",
+                    ),
+                }
 
-                lower_body = body.lower()
-                if any(marker in lower_body for marker in BLOCK_MARKERS):
-                    print("RESULT: Possible CAPTCHA, access restriction, or bot check.")
-                    failures += 1
-                else:
-                    matches = list(dict.fromkeys(PRICE_PATTERN.findall(body)))
-                    if matches:
-                        print(f"Price-like text found: {matches[:10]}")
-                        print("RESULT: Price-like text is visible; extraction needs validation.")
-                    else:
-                        print("RESULT: Page opened, but no recognizable rupee price was found.")
-                        failures += 1
+                found = False
 
-                print(f"Page excerpt: {excerpt}")
+                for label, (selector, attribute) in checks.items():
+                    locator = page.locator(selector).first
+
+                    try:
+                        if locator.count():
+                            value = (
+                                locator.get_attribute(attribute)
+                                if attribute
+                                else locator.inner_text(timeout=2000)
+                            )
+                            if value and value.strip():
+                                print(f"{label}: {value.strip()[:200]}")
+                                found = True
+                    except Exception:
+                        pass
+
+                # Check whether the returned page looks like an interstitial.
+                excerpt = re.sub(r"\s+", " ", page.locator("body").inner_text()[:700])
+                print("Page excerpt:", excerpt)
+
+                if not found:
+                    print(
+                        "RESULT: No product-specific price metadata found. "
+                        "The page may be an interstitial or omit price data."
+                    )
 
             except Exception as exc:
-                print(f"RESULT: Could not inspect page: {type(exc).__name__}: {exc}")
-                failures += 1
+                print(f"DIAGNOSTIC ERROR: {type(exc).__name__}: {exc}")
 
         browser.close()
-
-    print(f"\nDiagnostic finished. Products with issues: {failures}/{len(products)}")
-    print("This is a connectivity diagnostic, not a verified price tracker.")
-
 
 if __name__ == "__main__":
     main()
